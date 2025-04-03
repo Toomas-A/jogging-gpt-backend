@@ -1,15 +1,24 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
 import openai
 import uvicorn
 
 load_dotenv()
-
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 app = FastAPI()
+
+# ✅ Добавляем CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 👈 или укажи точно: ["https://toomas-a.github.io"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -41,7 +50,6 @@ async def ask_gpt(request: Request):
     except Exception as e:
         return {"error": str(e)}
 
-# Для запуска через Render (указываем PORT!)
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     uvicorn.run("main:app", host="0.0.0.0", port=port)
