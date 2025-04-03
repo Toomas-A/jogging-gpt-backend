@@ -8,7 +8,17 @@ import uvicorn
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+from fastapi.middleware.cors import CORSMiddleware  # 👈 Перемести импорт в начало
+
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 👈 можешь заменить на ["https://toomas-a.github.io"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
