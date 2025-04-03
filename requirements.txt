@@ -1,3 +1,4 @@
-﻿flask
+fastapi
+uvicorn
 openai
 python-dotenv
