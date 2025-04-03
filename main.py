@@ -14,7 +14,10 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://toomas-a.github.io"],  # ❗ Только этот адрес
+    allow_origins=[
+        "https://toomas-a.github.io",         # Без /
+        "https://toomas-a.github.io/",        # Со слэшем — ОБЯЗАТЕЛЬНО
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
