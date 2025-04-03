@@ -1,44 +1,47 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
-from pydantic import BaseModel
-import openai
-import os
+from fastapi.responses import HTMLResponse
 from dotenv import load_dotenv
+import os
+import openai
+import uvicorn
 
-# Загружаем переменные из .env
 load_dotenv()
+
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 app = FastAPI()
 
-# 🌐 Главная страница для проверки деплоя
 @app.get("/", response_class=HTMLResponse)
-def read_root():
+async def root():
     return """
-    <h1>✅ Jogging GPT Backend is Running</h1>
-    <p>POST your data to <code>/gpt</code> to get running shoe recommendations.</p>
+    <html>
+      <head><title>Jogging GPT</title></head>
+      <body>
+        <h1>👟 Welcome to Jogging GPT!</h1>
+        <p>Server is running successfully ✅</p>
+      </body>
+    </html>
     """
 
-# 📦 Структура запроса
-class GPTRequest(BaseModel):
-    prompt: str
-
-# 🤖 Маршрут обращения к GPT
 @app.post("/gpt")
-async def ask_gpt(request: GPTRequest):
+async def ask_gpt(request: Request):
+    body = await request.json()
+    prompt = body.get("prompt")
+
+    if not prompt:
+        return {"error": "Prompt is missing."}
+
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-4",  # Или "gpt-3.5-turbo" при необходимости
-            messages=[
-                {"role": "system", "content": "Ты эксперт по подбору беговых кроссовок."},
-                {"role": "user", "content": request.prompt}
-            ],
-            temperature=0.7,
-            max_tokens=800
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}]
         )
-
-        reply = response.choices[0].message["content"]
-        return JSONResponse(content={"reply": reply})
-
+        answer = response.choices[0].message["content"]
+        return {"response": answer}
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return {"error": str(e)}
+
+# Для запуска через Render (указываем PORT!)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port)
