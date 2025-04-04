@@ -1,19 +1,10 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
-from openai import OpenAI
-import os
-import uvicorn
-
-load_dotenv()
-
-# Создаем клиента OpenAI (новый синтаксис)
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app = FastAPI()
 
-# CORS: разрешаем запросы с GitHub Pages
+# Разрешаем запросы с GitHub Pages
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://toomas-a.github.io"],
@@ -29,34 +20,63 @@ async def root():
       <head><title>Jogging GPT</title></head>
       <body>
         <h1>👟 Welcome to Jogging GPT!</h1>
-        <p>Server is running successfully ✅</p>
+        <p>⚙️ Сервер запущен в тестовом режиме (без GPT)</p>
       </body>
     </html>
     """
 
 @app.post("/gpt")
-async def ask_gpt(request: Request):
+async def fake_response(request: Request):
     body = await request.json()
     prompt = body.get("prompt")
 
     if not prompt:
-        return {"error": "❌ Prompt is missing!"}
+        return {"error": "❌ Prompt is missing"}
 
-    print("📨 Получен prompt:", prompt)
+    print("📥 Получен запрос (мок):", prompt)
 
-    try:
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.7,
-        )
-        answer = response.choices[0].message.content
-        return {"response": answer}
-    except Exception as e:
-        print("🚨 GPT error:", str(e))
-        return {"error": f"⚠️ GPT error: {str(e)}"}
+    # Возвращаем фиктивные результаты (пример)
+    fake_shoes = [
+        {
+            "brand": "Asics",
+            "model": "Gel-Nimbus 26",
+            "year": "2025",
+            "weight": "290g",
+            "cushioning": "Maximal",
+            "drop": "8mm",
+            "stackHeight": "42mm",
+            "surface": "Road",
+            "features": "Подходит для длинных пробежек, отличная амортизация",
+            "averagePrice": "$160",
+            "reviewScores": {
+                "RunRepeat": 9.1,
+                "BelieveInTheRun": 8.9,
+                "Runner's World": 9.0
+            },
+            "images": [
+                "https://runrepeat.com/i/asics/65347/asics-gel-nimbus-26-luxury-green-9cf1-mens.jpg"
+            ]
+        },
+        {
+            "brand": "Hoka",
+            "model": "Clifton 9",
+            "year": "2024",
+            "weight": "248g",
+            "cushioning": "Moderate",
+            "drop": "5mm",
+            "stackHeight": "38mm",
+            "surface": "Road",
+            "features": "Легкие, универсальные для повседневных пробежек",
+            "averagePrice": "$140",
+            "reviewScores": {
+                "RunRepeat": 8.7,
+                "BelieveInTheRun": 8.5,
+                "Runner's World": 8.9
+            },
+            "images": [
+                "https://runrepeat.com/i/hoka-one-one/63962/hoka-clifton-9-ultimate-gray-pink-sand-womens.jpg"
+            ]
+        }
+    ]
 
-# Для локального запуска (не обязательно на Render)
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
+    return {"response": fake_shoes}
